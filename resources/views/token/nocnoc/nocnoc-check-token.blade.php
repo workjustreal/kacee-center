@@ -1,0 +1,69 @@
+@extends('layouts.master-layout', ['page_title' => "Check Connection Token"])
+@section('content')
+<div class="container-fluid">
+    <!-- start page title -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="javascript: void(0);">KACEE</a></li>
+                        <li class="breadcrumb-item"><a href="javascript: void(0);">Admin</a></li>
+                        <li class="breadcrumb-item active">NocNoc Api</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Check Connection Token</h4>
+            </div>
+        </div>
+    </div>
+    <!-- end page title -->
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-box">
+                        <div class="row">
+                            <div class="col-12">
+                                @if ($success == true)
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-success fs-4">Connected.</span><hr>
+                                    <p class="text-dark">NocNoc</p>
+                                </div>
+                                @else
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-danger fs-4">Not Connect</span><hr>
+                                    @if ($seller)
+                                        @foreach ($seller as $key => $value)
+                                        <p class="text-danger">{{ $key }} : {{ $value }}</p>
+                                        @endforeach
+                                    @endif
+                                </div>
+                                @endif
+                                {{-- @if ($seller->error == "")
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-success fs-4">Connected.</span><hr>
+                                    @if ($seller)
+                                        @foreach ($seller as $key => $value)
+                                        <p class="text-dark">{{ $key }} : {{ $value }}</p>
+                                        @endforeach
+                                    @endif
+                                </div>
+                                @else
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-danger fs-4">Not Connect</span><hr>
+                                    @if ($seller)
+                                        @foreach ($seller as $key => $value)
+                                        <p class="text-danger">{{ $key }} : {{ $value }}</p>
+                                        @endforeach
+                                    @endif
+                                </div>
+                                @endif --}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

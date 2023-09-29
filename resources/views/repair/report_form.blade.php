@@ -1,0 +1,795 @@
+@extends('layouts.master-nopreloader-layout', ['page_title' => 'รายการบำรุงรักษา'])
+@section('css')
+    <!-- third party css -->
+    <link href="{{ asset('assets/libs/select2/select2.min.css') }}" rel="stylesheet" type="text/css" />
+    <!-- third party css end -->
+    <style>
+        .text-decoration-dotted {
+            text-decoration-line: underline;
+            text-decoration-style: dotted;
+            text-decoration-thickness: 0px;
+        }
+
+        .rtv {
+            position: relative;
+        }
+
+        .abs {
+            position: absolute;
+        }
+
+        .full-underline {
+            width: 100%;
+        }
+
+        .full-underline span.full-dotted {
+            display: block;
+            width: 100%;
+            height: 16px;
+            border-bottom: 0.8px dotted #6c757d;
+        }
+
+        .dotshed {
+            border-bottom: 1px dotted;
+        }
+    </style>
+@endsection
+
+@section('content')
+    @inject('thaiDateHelper', '\App\Services\ThaiDateHelperService')
+    <div class="container-fluid">
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box">
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">KACEE</a></li>
+                            <li class="breadcrumb-item"><a href="javascript: void(0);">Repair</a></li>
+                            <li class="breadcrumb-item active">รหัสใบแจ้งซ่อม {{ $repairs->order_id }}</li>
+                        </ol>
+                    </div>
+                    <h4 class="page-title">รหัสใบแจ้งซ่อม{{ $order_dept->dept_name }} รหัส: {{ $repairs->order_id }}</h4>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+
+        <!-- start status form -->
+        @include('repair.status-head')
+        <!-- end status form -->
+
+        <!-- start button form -->
+        
+
+        <div class="col-12">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="card">
+                        <div class="card-body">
+
+                            <div class="card border">
+                                <div class="card-header">ข้อมูลผู้แจ้ง</div>
+                                <div class="card-body">
+                                    <div class="row pb-4">
+                                        <div class="col-sm-12">
+                                            <div class="rtv">
+                                                <div class="full-underline abs">
+                                                    <span class="full-dotted mb-2">
+                                                        @php
+                                                            $user = Auth::User()->findEmployee($repairs->user_id);
+                                                        @endphp
+                                                        @if ($user->title == 'นาย')
+                                                            <span class="bg-white">ชื่อ (นาย,<span
+                                                                    class="text-decoration-line-through">นาง</span>,<span
+                                                                    class="text-decoration-line-through">นางสาว</span>)</span>
+                                                        @elseif ($user->title == 'นาง')
+                                                            <span class="bg-white">ชื่อ (<span
+                                                                    class="text-decoration-line-through">นาย</span>,นาง,<span
+                                                                    class="text-decoration-line-through">นางสาว</span>)</span>
+                                                        @elseif ($user->title == 'นางสาว')
+                                                            <span class="bg-white">ชื่อ (<span
+                                                                    class="text-decoration-line-through">นาย</span>,<span
+                                                                    class="text-decoration-line-through">นาง</span>,นางสาว)</span>
+                                                        @else
+                                                            <span class="bg-white">ชื่อ (นาย,นาง,นางสาว)</span>
+                                                        @endif
+                                                        <span
+                                                            class="text-dark px-5">{{ $user->name . ' ' . $user->surname }}</span>
+
+                                                        <span class="bg-white">ชื่อเล่น </span>
+                                                        <span
+                                                            class="text-dark @if ($user->nickname) px-3 @else px-5 @endif">{{ $user->nickname }}</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-12 pb-4">
+                                        <div class="rtv">
+                                            <div class="full-underline abs">
+                                                <span class="full-dotted mb-2">
+                                                    <span class="bg-white">ฝ่าย / แผนก</span>
+                                                    <span
+                                                        class="text-dark @if ($dept_parent) px-5 @else px-5 @endif">{{ $dept_parent->dept_name }}</span>
+
+                                                    <span class="bg-white">เบอร์โทรภายใน </span>
+                                                    <span
+                                                        class="text-dark @if ($user->tel) px-3 @else px-5 @endif">{{ $user->tel }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if ($repairs->order_dept == 'A03050200')
+                                        <div class="row">
+                                            <div class="full-underline abs">
+                                                <span class="full-dotted">
+                                                    <span class="bg-white">เลขทะเบียนรถ : </span>
+                                                    <span
+                                                        class="text-dark @if ($repairs->car_id) px-5 @else px-5 @endif">{{ $repairs->car_id }}</span>
+
+                                                    <span class="bg-white">เลขไมค์ : </span>
+                                                    <span
+                                                        class="text-dark @if ($repairs->car_mile) px-5 @else px-5 @endif">{{ $repairs->car_mile }}</span>
+
+                                                    <span class="bg-white">ประเภทงานซ่อม : </span>
+                                                    <span
+                                                        class="text-dark @if ($repairs->order_type) px-5 @else px-5 @endif">{{ $repairs->order_type }}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="row mt-4">
+                                            <div class="col-sm-2">แจ้งปัญหา : </div>
+                                            <div class="col-sm-10">
+                                                <div class="row">
+                                                    @php
+                                                        $chk = false;
+                                                        $type_id = '';
+                                                        switch ($repairs->order_type) {
+                                                            case 'งานเช็คระยะ':
+                                                                $type_id = 1;
+                                                                break;
+                                                            case 'งานระบบ':
+                                                                $type_id = 2;
+                                                                break;
+                                                            case 'งานล้อ':
+                                                                $type_id = 3;
+                                                                break;
+                                                        }
+                                                        
+                                                    @endphp
+                                                    @foreach ($repair_type as $list)
+                                                        @if ($repairs->order_dept == $list->dept_id && $type_id == $list->type_id)
+                                                            <div class="col-sm-4 mb-1">
+                                                                @if (str_contains($repairs->order_tool, $list->name))
+                                                                    @php $chk = true; @endphp
+                                                                    <img src="{{ asset('assets/images/checkbox-mark.png') }}"
+                                                                        height="18">
+                                                                @else
+                                                                    <img src="{{ asset('assets/images/checkbox.png') }}"
+                                                                        height="18">
+                                                                @endif
+                                                                <span>{{ $list->name }}</span>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                    <div class="col-sm-4 mb-1">
+                                                        @if ($chk == false)
+                                                            <img src="{{ asset('assets/images/checkbox-mark.png') }}"
+                                                                height="18">
+                                                            <span>อื่นๆ <span
+                                                                    class="dotshed px-2">{{ $repairs->order_type }}</span></span>
+                                                        @else
+                                                            <img src="{{ asset('assets/images/checkbox.png') }}"
+                                                                height="18">
+                                                            <span>อื่นๆ <span class="dotshed px-2"></span></span>
+                                                        @endif
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="col-sm-12 row">
+                                            <div class="col-sm-2">แจ้งปัญหา : </div>
+                                            <div class="col-sm-10">
+                                                <div class="row">
+                                                    @php $chk = false; @endphp
+                                                    @foreach ($repair_type as $list)
+                                                        @if ($repairs->order_dept == $list->dept_id)
+                                                            <div class="col-sm-3 mb-1">
+                                                                @if ($repairs->order_type == $list->name)
+                                                                    @php $chk = true; @endphp
+                                                                    <img src="{{ asset('assets/images/checkbox-mark.png') }}"
+                                                                        height="18">
+                                                                @else
+                                                                    <img src="{{ asset('assets/images/checkbox.png') }}"
+                                                                        height="18">
+                                                                @endif
+                                                                <span>{{ $list->name }}</span>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+
+                                                    <div class="col-sm-3 mb-1">
+                                                        @if ($chk == false)
+                                                            <img src="{{ asset('assets/images/checkbox-mark.png') }}"
+                                                                height="18">
+                                                            <span>อื่นๆ <span
+                                                                    class="dotshed px-3">{{ $repairs->order_type }}</span></span>
+                                                        @else
+                                                            <img src="{{ asset('assets/images/checkbox.png') }}"
+                                                                height="18">
+                                                            <span>อื่นๆ <span class="dotshed px-3"></span></span>
+                                                        @endif
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <div class="row">
+                                        <div class="col-12 mt-3 mb-5">
+                                            <div class="rtv">
+                                                <div class="full-underline abs">
+                                                    @if ($repairs->order_dept != 'A03050200')
+                                                        <span class="full-dotted mb-2">
+                                                            <span class="bg-white">อุปกรณ์ที่แจ้งซ่อม : </span>
+                                                            <span
+                                                                class="text-dark @if ($repairs->order_tool) px-5 @else px-5 @endif">{{ $repairs->order_tool }}</span>
+                                                        </span>
+                                                    @endif
+
+                                                    <span class="full-dotted mb-2">
+                                                        <span class="bg-white">สถานที่ซ่อม : </span>
+                                                        <span
+                                                            class="text-dark @if ($repairs->order_address) px-5 @else px-5 @endif">{{ $repairs->order_address }}</span>
+                                                    </span>
+
+                                                    <span class="full-dotted mb-1">
+                                                        <span class="bg-white">รายละเอียดปัญหา : </span>
+                                                        <span
+                                                            class="text-dark @if ($repairs->order_detail) px-2 @else px-5 @endif">{{ $repairs->order_detail }}</span>
+                                                    </span>
+                                                    <span class="full-dotted mb-2"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @php
+                                        $images = json_decode($repairs->order_image, true);
+                                        if ($repairs->order_dept != 'A03050200') {
+                                            $css = 'mt-3';
+                                        } else {
+                                            $css = '';
+                                        }
+                                        
+                                    @endphp
+                                    @if ($images)
+                                        <div class="row {{ $css }}">
+                                            <div class="col-sm-2 mt-2">รูปภาพประกอบ : </div>
+                                            <div class="col-sm-10 mt-2">
+                                                @foreach ($images as $key => $image)
+                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal"
+                                                        id="image{{ $key + 1 }}">
+                                                        <img src="{{ url('assets/images/repair/' . $image) }}"
+                                                            onerror="this.onerror=null;this.src='{{ url('assets/images/NoImage.jpg') }}'"
+                                                            alt="Image {{ $key + 1 }}"
+                                                            style="width: 100px;padding: 0 10px;margin-bottom: 12px;">
+                                                    </a>
+
+                                                    <div class="modal fade" id="imageModal" tabindex="-1"
+                                                        role="dialog" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <button type="button" class="btn-close"
+                                                                        data-bs-dismiss="modal"
+                                                                        aria-label="Close"></button>
+                                                                </div>
+
+                                                                <div class="modal-body">
+                                                                    <!-- START carousel-->
+                                                                    <div id="carouselExampleControls"
+                                                                        class="carousel slide" data-bs-ride="carousel">
+                                                                        <div class="carousel-inner" role="listbox">
+                                                                            @foreach ($images as $_key => $_image)
+                                                                                <div
+                                                                                    class="carousel-item @if ($key == $_key) active @endif">
+                                                                                    <img class="d-block img-fluid w-100"
+                                                                                        src="{{ url('assets/images/repair/' . $_image) }}"
+                                                                                        onerror="this.onerror=null;this.src='{{ url('assets/images/NoImage.jpg') }}'"
+                                                                                        alt="{{ $_image }}">
+                                                                                </div>
+                                                                            @endforeach
+                                                                        </div>
+                                                                        <a class="carousel-control-prev"
+                                                                            href="#carouselExampleControls" role="button"
+                                                                            data-bs-slide="prev">
+                                                                            <span class="carousel-control-prev-icon"
+                                                                                aria-hidden="true"></span>
+                                                                            <span class="visually-hidden">Previous</span>
+                                                                        </a>
+                                                                        <a class="carousel-control-next"
+                                                                            href="#carouselExampleControls" role="button"
+                                                                            data-bs-slide="next">
+                                                                            <span class="carousel-control-next-icon"
+                                                                                aria-hidden="true"></span>
+                                                                            <span class="visually-hidden">Next</span>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="row col-12 {{ $css }} mb-5">
+                                            <div class="rtv">
+                                                <div class="full-underline abs">
+                                                    <span class="full-dotted mt-2">
+                                                        <span class="bg-white">รูปภาพประกอบ : </span>
+                                                        <span class="text-dark px-5">-</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <div class="row mt-4">
+                                        <div class="col-sm-6 text-center">
+                                            <div class="rtv">
+                                                <div class="full-underline abs px-3">
+                                                    <span class="full-dotted">
+                                                        @if ($repairs->user_id)
+                                                            {{ $user->name . ' ' . $user->surname }} /
+                                                            {{ $thaiDateHelper->shortDateFormat($repairs->order_date) }}
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <p class="fw-bold">ผู้แจ้ง / ว.ด.ป.</p>
+                                        </div>
+                                        <div class="col-sm-6 text-center">
+                                            <div class="rtv">
+                                                <div class="full-underline abs px-3">
+                                                    <span class="full-dotted">
+                                                        @php
+                                                            $approve = Auth::User()->findEmployee($repairs->approve_name);
+                                                        @endphp
+                                                        @if ($repairs->approve_name)
+                                                            {{ $approve->name . ' ' . $approve->surname }} /
+                                                            {{ $thaiDateHelper->shortDateFormat($repairs->approve_date) }}
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <p class="fw-bold">ผู้อนุมัติ / ว.ด.ป.</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="card border">
+                                <div class="card-header">ส่วนที่ 4 ผู้ปฏิบัติงาน</div>
+                                <div class="card-body pt-2">
+                                    <form action="{{ route('repair.report_update') }}" class="wow fadeInLeft"
+                                        method="post">
+                                        @csrf
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="col-md-9 col-lg-9 pt-2">
+                                                    <div class="form-group">
+                                                        <label class="control-label">แจ้งสถานะของงาน</label>
+                                                        <select name="status" onchange="otherCheck(this);"
+                                                            class="form-control form-control-md form-control-required"
+                                                            required>
+                                                            <option value="" selected="selected">-----
+                                                                กรุณาเลือก
+                                                                -----</option>
+                                                            <option value="ดำเนินการ">ดำเนินการต่อ</option>
+                                                            <option value="รอตรวจสอบ">งานเสร็จสิ้น</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12" id="dContinue" style="display: none;">
+                                                <div class="col-md-9 col-lg-9 pt-2">
+                                                    <div class="form-group">
+                                                        <label class="control-label">วันที่ดำเนินการต่อ</label>
+                                                        <input type="date"
+                                                            class="form-control form-control-md form-control-required"
+                                                            id="continue_date" name="continue_date"
+                                                            value="@php echo date("Y-m-d", strtotime('tomorrow')); @endphp">
+                                                    </div>
+
+                                                </div>
+
+                                                @if ($repairs->order_dept != 'A01100100')
+                                                    <div class="col-md-9 col-lg-9 pt-2">
+                                                        <div class="form-group">
+                                                            <label
+                                                                class="control-label">ตัวเลือกในการอัพเดทงานของผู้ปฏิบัติงาน</label>
+                                                            <select name="s_comment" id="s_comment"
+                                                                class="form-control form-control-md form-control-required">
+                                                                <option value="">-- กรุณาเลือก --</option>
+                                                                <option value="รอเปลี่ยนอะไหล่">รอเปลี่ยนอะไหล่</option>
+                                                                <option value="รอสั่งซื้ออะไหล่">รอสั่งซื้ออะไหล่</option>
+                                                                <option value="ชำรุด/เปลี่ยนใหม่">ชำรุด/เปลี่ยนใหม่
+                                                                </option>
+                                                                <option value="ส่งบริษัทนอกซ่อม">ส่งบริษัทนอกซ่อม</option>
+                                                                <option value="รอบริษัทนอกเข้ามาซ่อม">รอบริษัทนอกเข้ามาซ่อม
+                                                                </option>
+                                                                <option value="อื่นๆ">อื่นๆ...</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+
+                                            <div class="col-12" id="dSuccess" style="display: none;">
+                                                <div class="col-md-9 col-lg-9 pt-2">
+                                                    <div class="form-group">
+                                                        <label class="control-label">วันที่ซ่อมเสร็จ</label>
+                                                        <input type="date"
+                                                            class="form-control form-control-md form-control-required"
+                                                            id="end_date" name="end_date"
+                                                            value="@php echo date("Y-m-d"); @endphp">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            @if ($repairs->order_dept == 'A01100100')
+                                                <div class="col-12" id="CheckSuccess" style="display: none;">
+                                                    <div class="col-md-9 col-lg-9 pt-3">
+                                                        <label class="control-label">ผลการซ่อม : </label>
+                                                        <div class="form-group">
+
+                                                            <div class="form-check form-check-inline range_full pt-2">
+                                                                <input class="form-check-input" type="radio"
+                                                                    name="s_job" id="solved"
+                                                                    value="สามารถแก้ปัญหาอาการได้สำเร็จ"
+                                                                    onchange="toolCheck(this);"
+                                                                    @if ('solved' == old('s_job')) checked @endif />
+                                                                <label class="form-check-label"
+                                                                    for="solved">สามารถแก้ปัญหาอาการได้สำเร็จ</label>
+                                                            </div>
+
+                                                            <div class="form-check form-check-inline range_full pt-2">
+                                                                <input class="form-check-input" type="radio"
+                                                                    name="s_job" id="n_solved"
+                                                                    value="ไม่สามารถแก้ปัญหาได้"
+                                                                    onchange="toolCheck(this);"
+                                                                    @if ('n_solved' == old('s_job')) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="n_solved">ไม่สามารถแก้ปัญหาได้</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12" id="CheckTool" style="display: none;">
+                                                    <div class="col-md-6 col-lg-5 p-2">
+                                                        <div class="form-group">
+                                                            <div class="form-check form-check-inline range_full pt-2">
+                                                                <input class="form-check-input" type="radio"
+                                                                    name="s_tool" id="n_change"
+                                                                    value="ไม่ต้องเปลี่ยนอุปกรณ์"
+                                                                    @if ('n_change' == old('s_tool')) checked @endif />
+                                                                <label class="form-check-label"
+                                                                    for="n_change">ไม่ต้องเปลี่ยนอุปกรณ์</label>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="form-group">
+                                                            <div class="form-check form-check-inline range_full pt-2">
+                                                                <input class="form-check-input" type="radio"
+                                                                    name="s_tool" id="change"
+                                                                    value="ต้องเปลี่ยนอุปกรณ์"
+                                                                    @if ('change' == old('s_tool')) checked @endif>
+                                                                <label class="form-check-label"
+                                                                    for="change">ต้องเปลี่ยนอุปกรณ์
+                                                                    (ระบุในรายละเอียด)</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            <div class="col-md-9 col-lg-9 pt-2">
+                                                <div class="fom-group">
+                                                    <label class="control-label">รายละเอียดการปฏิบัติงาน :</label>
+                                                    <textarea class="form-control form-control-md form-control-required" id="technician_detail" name="technician_detail"
+                                                        placeholder="กรุณากรอกรายละเอียด" rows="4" value="" required></textarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-lg-12 col-md-12 col-sm-12 pt-3">
+                                                <input type="hidden" name="id" value="{{ $repairs->id }}">
+                                                <input type="hidden" name="sdate"
+                                                    value="{{ \Carbon\Carbon::now() }}">
+                                                <a class="btn btn-white" href="{{ url('/repair/action') }}"><i
+                                                        class="fe-arrow-left"></i> ย้อนกลับ</a>
+                                                <button type="submit" class="btn btn-primary mx-2" id="btn-submit"> <i
+                                                        class="fe-save"></i> บันทึก</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card border">
+                                <div class="card-header">ข้อมูลผู้ปฏิบัติงาน</div>
+                                <div class="card-body">
+                                    <div class="row ">
+                                        <div class="col-12 mb-4">
+                                            <div class="rtv">
+                                                <div class="full-underline abs">
+                                                    <span class="full-dotted mb-2">
+                                                        <span class="bg-white">เริ่มปฏิบัติงาน : </span>
+                                                        <span class="text-dark px-3">
+                                                            {{ $thaiDateHelper->shortDateFormat($repairs->start_date) }}
+                                                        </span>
+                                                    </span>
+
+                                                    <span class="full-dotted mb-2" style="padding-bottom: 20px">
+                                                        <span class="bg-white">ผู้ปฏิบัติงาน : </span>
+                                                        <span class="text-dark px-2" style="line-height: 2">
+                                                            @if ($tech_name)
+                                                                @foreach ($tech_name as $row)
+                                                                    @php
+                                                                        $worker = Auth::User()->findEmployee($row['emp_id']);
+                                                                        if ($worker->nickname) {
+                                                                            $work = ' ( ' . $worker->nickname . ' )';
+                                                                        } else {
+                                                                            $work = '';
+                                                                        }
+                                                                    @endphp
+                                                                    <span class="px-1">
+                                                                        {{ $worker->title . $worker->name . ' ' . $worker->surname . $work }}
+                                                                    </span>
+                                                                @endforeach
+                                                            @endif
+                                                        </span>
+                                                    </span>
+
+                                                    @if (count($tech_name) > 3)
+                                                        <span class="full-dotted mb-2"></span>
+                                                    @endif
+
+
+                                                    <span class="full-dotted mb-2">
+                                                        <span class="bg-white">หมายเหตุของผู้รับแจ้ง : </span>
+                                                        <span class="text-dark px-3">
+                                                            {{ $repairs->manager_detail ? $repairs->manager_detail : '-' }}
+                                                        </span>
+                                                    </span>
+
+                                                    <span class="full-dotted mb-2">
+                                                        <span class="bg-white">ค่าใช้จ่ายในงาน : </span>
+                                                        <span class="text-dark px-3">
+                                                            {{ $repairs->price ? $repairs->price : '-' }}
+                                                            &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp บาท</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-5">
+                                        <div class="col-sm-6 text-center mt-5">
+                                            <div class="rtv">
+                                                <div class="full-underline abs px-2">
+                                                    <span class="full-dotted">
+                                                        @php
+                                                            $manager = Auth::User()->findEmployee($repairs->manager_id);
+                                                        @endphp
+                                                        @if ($manager)
+                                                            {{ $manager->name . ' ' . $manager->surname }} /
+                                                            {{ $thaiDateHelper->shortDateFormat($repairs->manager_date) }}
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <p class="fw-bold">ผู้รับแจ้ง / ว.ด.ป.</p>
+                                        </div>
+
+                                        <div class="col-sm-6 text-center mt-5">
+                                            <div class="rtv">
+                                                <div class="full-underline abs px-2">
+                                                    <span class="full-dotted">
+                                                        @if ($ap_detail)
+                                                            @foreach ($ap_detail as $rows)
+                                                                @php $check = Auth::User()->findEmployee($rows['emp_id']); @endphp
+                                                                {{ $check->name . ' ' . $check->surname }} /
+                                                                {{ $thaiDateHelper->shortDateFormat($rows['date']) }}
+                                                            @endforeach
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <p class="fw-bold">ผู้ตรวจสอบงาน / ว.ด.ป.</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="border-0 border-bottom text-center">Action</div>
+                            <div class="border border-light p-2 mb-3">
+                                @if ($tech_detail)
+                                    @foreach ($tech_detail as $list)
+                                        @php
+                                            if ($list['continue_date']) {
+                                                $con_date = 'ดำเนินงานต่อ / ' . \Carbon\Carbon::parse($list['continue_date'])->thaidate('j M Y');
+                                            } elseif ($list['end_date']) {
+                                                $con_date = 'ปิดงาน / ' . \Carbon\Carbon::parse($list['end_date'])->thaidate('j M Y');
+                                            }
+                                        @endphp
+                                        <div class="post-user-comment-box bg-white rounded my-1">
+                                            <div class="d-flex align-items-start">
+                                                <img class="me-2 avatar-sm rounded-circle"
+                                                    src="{{ url('assets/images/users/thumbnail/user-1.jpg') }}"
+                                                    onerror="this.onerror=null;this.src='{{ url('assets/images/users/thumbnail/user-1.jpg') }}'"
+                                                    alt="image">
+                                                <div class="w-100">
+                                                    <h5 class="mt-0">
+                                                        {{ $list['name'] }}
+                                                        <small class="text-muted">
+                                                            {{ \Carbon\Carbon::parse($list['start_date'])->locale('th_TH')->diffForHumans() }}
+                                                        </small>
+                                                    </h5>
+                                                    <i class="mdi mdi-share-outline me-1"></i>
+                                                    {{ $list['s_job'] . ' ' . $list['s_tool'] . ' ' . $list['detail'] }}
+                                                    <small class="text-muted ms-2">{{ $con_date }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+
+                                @if ($ap_detail)
+                                    @foreach ($ap_detail as $rows)
+                                        <div class="post-user-comment-box bg-white rounded my-1">
+                                            <div class="d-flex align-items-start">
+                                                <img class="me-2 avatar-sm rounded-circle"
+                                                    src="{{ url('assets/images/users/thumbnail/user-1.jpg') }}"
+                                                    onerror="this.onerror=null;this.src='{{ url('assets/images/users/thumbnail/user-1.jpg') }}'"
+                                                    alt="image" />
+                                                <div class="w-100">
+                                                    <h5 class="mt-0">
+                                                        {{ $rows['name'] }}
+                                                        <small class="text-muted">
+                                                            {{ \Carbon\Carbon::parse($rows['date'])->locale('th_TH')->diffForHumans() }}
+                                                        </small>
+                                                    </h5>
+                                                    <i class="mdi mdi-share-outline me-1"></i>
+                                                    {{ $rows['detail'] }}
+                                                    <small class="text-muted ms-2">
+                                                        {{ \Carbon\Carbon::parse($rows['date'])->thaidate('D j M Y, เวลา H:i น.') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+
+                                @if ($user_detail)
+                                    @foreach ($user_detail as $rowu)
+                                        <div class="post-user-comment-box bg-white rounded my-1">
+                                            <div class="d-flex align-items-start">
+                                                <img class="me-2 avatar-sm rounded-circle"
+                                                    src="{{ url('assets/images/users/thumbnail/user-1.jpg') }}"
+                                                    onerror="this.onerror=null;this.src='{{ url('assets/images/users/thumbnail/user-1.jpg') }}'"
+                                                    alt="image" />
+                                                <div class="w-100">
+                                                    <h5 class="mt-0">
+                                                        {{ $rowu['name'] }}
+                                                        <small class="text-muted">
+                                                            {{ \Carbon\Carbon::parse($rowu['date'])->locale('th_TH')->diffForHumans() }}
+                                                        </small>
+                                                    </h5>
+                                                    <i class="mdi mdi-share-outline me-1"></i>
+                                                    {{ $rowu['detail'] }}
+                                                    <small class="text-muted ms-2">
+                                                        {{ \Carbon\Carbon::parse($rowu['date'])->thaidate('D j M Y, เวลา H:i น.') }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    @endsection
+    @section('script')
+        <script src="{{ asset('assets/js/ajax/jquery.min.js') }}"></script>
+        <script src="{{ asset('assets/libs/select2/select2.min.js') }}"></script>
+        <script type="text/javascript">
+            function otherCheck(that) {
+                const s_comment = document.getElementById("s_comment");
+                const CheckSuccess = document.getElementById("CheckSuccess");
+                const order_dept = "{{ $repairs->order_dept }}";
+
+                if (that.value == "รอตรวจสอบ") {
+                    document.getElementById("dSuccess").style.display = "block";
+                    document.getElementById("dContinue").style.display = "none";
+                    if (order_dept == 'A01100100') {
+                        CheckSuccess.style.display = "block";
+                    } else if (order_dept != 'A01100100') {
+                        s_comment.removeAttribute("required");
+                    }
+
+                } else if (that.value == "ดำเนินการ") {
+                    document.getElementById("dSuccess").style.display = "none";
+                    document.getElementById("dContinue").style.display = "block";
+                    if (order_dept == 'A01100100') {
+                        CheckSuccess.style.display = "none";
+                    } else if (order_dept != 'A01100100') {
+                        s_comment.setAttribute("required", "");
+                    }
+
+                } else {
+                    s_comment.removeAttribute("required");
+                    document.getElementById("dSuccess").style.display = "none";
+                    document.getElementById("dContinue").style.display = "none";
+                    if (order_dept == 'A01100100') {
+                        CheckSuccess.style.display = "none";
+                    } else if (order_dept != 'A01100100') {
+                        s_comment.removeAttribute("required");
+                    }
+                }
+            }
+
+            function toolCheck(that) {
+                if (that.value == "สามารถแก้ปัญหาอาการได้สำเร็จ") {
+                    document.getElementById("CheckTool").style.display = "block";
+                } else {
+                    document.getElementById("CheckTool").style.display = "none";
+                }
+            }
+        </script>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('a[data-bs-toggle="modal"]').click(function() {
+                    var imageId = $(this).attr('id');
+                    if (typeof imageId !== 'undefined') {
+                        var index = imageId.slice(-1);
+                        $('#imageModal .carousel-inner div').removeClass('active');
+                        $('#imageModal .carousel-indicators div:nth-child(' + index + ')').addClass('active');
+                        $('#imageModal .carousel-item').removeClass('active');
+                        $('#imageModal .carousel-item:nth-child(' + index + ')').addClass('active');
+                    }
+                });
+            });
+        </script>
+    @endsection
